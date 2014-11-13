@@ -1,0 +1,57 @@
+Representación del grafo.
+crea lista adyacencia a partir de la tabla de adyacencias generada en excel
+
+INSTRUCCIONES:
+==============
+GRAFO: vertices = tuberías, Aristas = válvulas 
+
+Preparar Excel
+1.-Crear hoja "vertices" a partir del P&ID de la red general 
+2.-Generar hoja "matriz incidencia" con macro correspondiente
+3.-Generar hoja "matriz adyacencia" con macro correspondiente
+
+crea lista adyacencia a partir de la tabla de adyacencias generada en excel
+
+instrucciones:
+1.-excel: copiar la hoja matrizadyacencia en libro aparte y guardar como csv (delimitado por comas)
+2.-mysql: eliminar la tabla anterior
+3.-mysql: importar el archivo creado anteriormente con ; como separador de columnas
+		sin delimitación de columnas y sin marcar la opcion de "la primera fila contiene nombres..."
+4.-mysql: renombrar la tabla recien creada a "matrizadyacencia"
+5.-este fichero: actualizar la constante CantVertices
+
+Notas:
+- ojo! la importación en mysql de la hoja guardada en formato ODS no funciona bien; hay que usar el csv
+- la matriz $destinos contiene los numeros de nodo asignados a los clientes y los nombres utilizados. Ver pestaña "aristas" del xls
+- la constante $origen contiene el valor del nodo asignado a los depositos
+- las rutas generadas "con paths_to" con 0 saltos indican que no alcanza el destino
+
+
+TestGraph.php:
+-------------------
+Permite copmrobar la respuesta del programa para una válvula sin tener el interface cliente
+
+AJUSTES:
+===========
+en graph.php
+--------------
+
+// poner a 1 si se quiere imprimir resultados en el html
+$imprimir_si=0; 
+
+// cambiar descripción destinos según convenga
+function destinos() {	// lista destinos
+
+// el nombre `col 1` de la priemra columna resultante al importar la tabla matrizadyacencia de excel
+$select='SELECT * FROM `matrizadyacencia` WHERE `matrizadyacencia`.`col 1` > 0 ';
+
+// número de vertices
+$CantVertices=100;
+
+// el codigo de estado
+$abierta=($estado['Estado']==2); // estado valvula 2 = abierta
+
+// el numero de nodo asignado al origen del agua
+$origen="8"; // deposito $DEPOSITO=8;
+
+

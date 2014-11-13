@@ -1,0 +1,94 @@
+<?php
+ob_start();
+include_once('3lib/firebug/fb.php');
+fb($GLOBALS,"valvulas.html");
+?>
+
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Lista válvulas</title> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.1.1.min.css" />
+	<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery.mobile-1.1.1.min.js"></script>
+	<script type="text/javascript" src="js/ProValve.js"></script>
+</head> 
+<body> 
+
+<script type="text/javascript">
+// fuente: http://tuvianblog.com/2011/07/14/how-to-access-url-or-url-parts-using-javascript-get-the-website-url-using-javascript/
+function getParam(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(window.location.href);
+    if (results == null)
+        return "";
+    else
+        return results[1];
+}
+</script>
+
+
+<div data-role="page" id="Valvulas" data-title="Válvulas" data-dom-cache="false" data-ajax="false">
+
+	<div data-role="header" data-position="fixed">
+		<h1>Válvulas</h1>
+		<a href="principal.php" data-role="button" data-inline="true" data-icon="home" data-theme="b">Inicio</a>
+		<a href="#" data-rel="back" data-role="button" data-inline="true" data-icon="back" data-theme="b">Volver...</a>
+	</div><!-- /header -->
+
+	<div data-role="content" data-theme="a">
+	 	<ul id="lista_valvulas" data-role="listview" data-inset="true" data-theme="a" data-filter="false">
+		</ul>
+	</div>
+
+	<div data-role="footer" data-position="fixed">
+		<h4>@ARM 2012</h4>
+	</div><!-- /footer -->
+
+<!-- AJAX para leer lista arquetas -->
+<script type="text/javascript">
+//function LeeListaValvulas(arqueta){
+	var arqueta = getParam('AR');
+	var request = $.ajax({
+		type: "POST",
+		data: {'arqueta' : arqueta},
+		url: "QueryValvulas.php"
+	})
+
+	request.done(function(resp) {
+		var items=[];
+		var listitems=[];
+		var linea1;
+		items=jQuery.parseJSON(resp);
+		linea1='';
+		var estados=["???","ce","ab"];
+		$.each(items[0].valvulas,function(key,val){
+			linea1 = linea1 + '<li data-icon="arrow-r"><a data-ajax="false" href="detalle.html?ID=' + val.ID + '">' + val.nombre + ' (' + estados[val.estado] + ')</a></li>'; 
+		});
+		listitems.push(linea1);
+		$('#lista_valvulas').html(listitems.join(''));
+	    $('#lista_valvulas').listview( "refresh" );    
+		});
+
+	request.fail(function(jqXHR, textStatus) {
+			alert("error ajax valvulas.html");
+	});
+</script>
+
+<!--
+<script type="text/javascript">
+	$( document ).live("pageinit", function() {
+		$('#lista_valvulas').listview( "refresh" ); 
+		alert("kk");
+	});
+</script>
+-->
+
+</div>
+
+</body>
+</html>

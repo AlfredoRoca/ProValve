@@ -1,0 +1,149 @@
+<?php
+ob_start();
+include_once('3lib/firebug/fb.php');
+fb($GLOBALS,"detalle.html");
+?>
+
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Detalle válvula</title> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.1.1.min.css" />
+<!--	<link rel="stylesheet" href="themes/ProValve.css" />
+-->	<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery.mobile-1.1.1.min.js"></script>
+	<script type="text/javascript" src="js/ProValve.js"></script>
+</head> 
+<body> 
+
+<!-- AJAX para solicitar permiso cerrar o forzar estado conocido -->
+<script type="text/javascript">
+function EjecutaAccion(){
+	$.ajax({
+		type: "POST",
+		data: {	'accion' : $("input[name='accion']:checked").val(), 
+				'estado' : $("input[name='estado']:checked").val(),
+				'ID'	: getParam('ID')
+			},
+		dataType: "html",
+		url: "peticion.php", 
+	}).done(function(resp) {
+			$('#RespuestaPeticion').html(resp);
+		});
+};
+</script>	
+
+<!-- AJAX para leer estado de la valvula -->
+<script type="text/javascript">
+function LeeEstadoValvula(ID){
+	$.ajax({
+		type: "POST",
+		data: {	'ID' : ID  },
+//		dataType: "JSON",
+		url: "QueryEstado.php", 
+	}).done(function(resp) {
+// habilita siguiente línea para ver respuesta a "lee estado"
+//			$('#RespuestaPeticion').html(resp);
+			var objdatos = jQuery.parseJSON(resp);
+			$('#nombreValvula').html(objdatos.Nombre);
+			switch(objdatos.Estado){
+				case '0':  // desconocido
+					$("#desconocido").attr("checked",true);
+					break;
+				case '1':  // cerrada
+					$("#cerrada").attr("checked",true);
+					break;
+				case '2':  // abierta
+					$("#abierta").attr("checked",true);
+					break;
+				default:
+					$("#desconocido").attr("checked",true);
+			};
+			$("input[name='estado']").checkboxradio("refresh");
+		});
+};
+</script>	
+
+<script type="text/javascript">
+// fuente: http://tuvianblog.com/2011/07/14/how-to-access-url-or-url-parts-using-javascript-get-the-website-url-using-javascript/
+function getParam(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(window.location.href);
+    if (results == null)
+        return "";
+    else
+        return results[1];
+}
+</script>
+
+<script type="text/javascript">
+	$( document ).delegate("#Detalle", "pagecreate", function() {
+		LeeEstadoValvula(getParam('ID'));
+	});
+</script>
+
+
+<div data-role="page" id="Detalle" data-title="Válvula">
+	<div data-role="header" data-position="fixed">
+		<h1>Detalle válvula</h1>
+		<a href="principal.php" data-role="button" data-ajax="false" data-inline="true" data-icon="home" data-theme="b">Inicio</a>
+ 		<a href="#" data-rel="back" data-role="button" data-ajax="false" data-inline="true" data-icon="back" data-theme="b" >Volver</a>
+	</div><!-- /header -->
+	<div data-role="content" data-theme="a">
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<h3 id="nombreValvula">Nombre válvula</h3>
+			</div>
+			<div class="ui-block-b">
+				<button data-inline="true" onclick="LeeEstadoValvula(getParam('ID'));">Lee estado</button>
+			</div>
+		</div>
+		
+		<form action="peticion.php" method="post">
+            <div data-role="fieldcontain">
+
+				<fieldset data-role="controlgroup" data-type="horizontal" >
+				     	<input type="radio" name="estado" id="desconocido" value="0" checked=false/>
+				     	<label for="desconocido">???</label>
+
+				     	<input type="radio" name="estado" id="cerrada" value="1"  />
+				     	<label for="cerrada">Cerrada</label>
+
+				     	<input type="radio" name="estado" id="abierta" value="2" checked />
+				     	<label for="abierta">Abierta</label>
+
+				</fieldset>
+
+				<fieldset data-role="controlgroup"  >
+				     	<input type="radio" name="accion" id="forzar_estado" value="forzar" />
+				     	<label for="forzar_estado">Forzar estado real</label>
+
+				     	<input type="radio" name="accion" id="solicitar_permiso" value="permiso" checked="checked" />
+				     	<label for="solicitar_permiso">Solicitar permiso para cerrar</label>
+
+				</fieldset>
+
+            </div>
+       		<h4 id="RespuestaPeticion">Aquí la respuesta a la petición</h4>
+            <button type="button"  onclick="EjecutaAccion()" data-theme="b">Enviar</button>
+        </form>		
+	</div>
+	
+	<div data-role="footer" data-position="fixed" >
+		<h4>@ARM 2012</h4>
+	</div><!-- /footer -->
+
+</div>
+
+
+
+
+
+
+
+</body>
+</html>
